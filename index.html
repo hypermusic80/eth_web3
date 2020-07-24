@@ -6,10 +6,20 @@
         <script type="text/javascript" src="web3.min.js"></script>
         <script type="text/javascript" src="jquery-3.5.1.min.js"></script>
         <script type="text/javascript">
+
             var web3 = new Web3();
             web3.setProvider(new Web3.providers.HttpProvider('http://localhost:8545'));
 
             $(function(){
+                /*
+                    https://github.com/ethereum/go-ethereum/wiki/Management-APIs
+                    http://localhost:8545
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 10,
+                        "method": "personal_listAccounts"
+                    }
+                */
                 web3.eth.getAccounts().then(
                     function (res) { 
                         web3.eth.getBalance(res[0]).then(function (res2) {

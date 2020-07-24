@@ -3,15 +3,52 @@ docker images
 docker run -it --name ethereum.geth -p 8545:8545 -p 30303:30303 -d pjt3591oo/ethereum-geth:1.90
 docker start ethereum.geth
 docker exec -it ethereum.geth /bin/bash
+
+## 1) bootnode 생성
+root@5f15d9a4d8a1:/# mkdir bootnode
+root@5f15d9a4d8a1:/# cd bootnode/
+root@5f15d9a4d8a1:/bootnode# bootnode -genkey boot.key
+root@5f15d9a4d8a1:/bootnode# ls
+boot.key
+
+root@5f15d9a4d8a1:/bootnode# cat boot.key  
+517cc4ad86504e26d8f7eba8f10fb6040de71c12fc636c806d2a73337320315f
+
+root@5f15d9a4d8a1:/bootnode# bootnode -nodekey boot.key -verbosity 9 
+enode://f509ded141c13b40e78e52d8509879e0d9f3cf97a29bb0bb04510d1b476bb4af323ca25a81fa305bafddf3deab632225ad1dda230afdb7399047821a64df306f@127.0.0.1:0?discport=30301
+Note: you're using cmd/bootnode, a developer tool.
+We recommend using a regular node as bootstrap node for production deployments.
+INFO [07-24|04:17:53.112] New local node record                    seq=1 id=a90114f66ffdd120 ip=<nil> udp=0 tcp=0
+
+## 2) node1 생성
 $ mkdir node1
 $ cd node1
 $ geth --datadir $PWD account new
-Address: {f1f8343ed9018db638a9054b5dec6259dfed446e}
-keystore : UTC--2020-07-21T14-41-43.107041348Z--f1f8343ed9018db638a9054b5dec6259dfed446e
-
-docker cp C:\Users\lwjin\genesis.json ethereum.geth:/node1/genesis.json
-
+docker cp D:\web3\genesis.json ethereum.geth:/node1/genesis.json
 geth --datadir $PWD init genesis.json
+
+geth --port 30311 --rpc --rpcaddr 0.0.0.0 --rpcport 8545 --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal,personal --rpccorsdomain "*" console --bootnodes 'enode://42e1af1d37bec8378e08cd421c0094c916822aa6ae03aa1e834dd319209cf73b2d5e563d2b3f3427e78ed51d59dbc8bd6da4a230c9993f88fccbc513601eb9a9@127.0.0.1:30311?discport=30301' --syncmode 'full'
+
+## 3) node2 생성
+$ mkdir node2
+$ cd node2
+$ geth --datadir $PWD account new
+docker cp D:\web3\genesis.json ethereum.geth:/node2/genesis.json
+geth --datadir $PWD init genesis.json
+
+geth --port 30312 --rpc --rpcaddr 0.0.0.0 --rpcport 8546 --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal,personal --rpccorsdomain "*" console --bootnodes 'enode://42e1af1d37bec8378e08cd421c0094c916822aa6ae03aa1e834dd319209cf73b2d5e563d2b3f3427e78ed51d59dbc8bd6da4a230c9993f88fccbc513601eb9a9@127.0.0.1:30312?discport=30301' --syncmode 'full'
+
+## 각 노드에서 peer연결 확인
+net.peerCount
+admin.peers
+
+
+
+
+
+
+
+
 
 geth --datadir $PWD --networkid 1234 console
 geth --rpc --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal console
@@ -48,7 +85,22 @@ npm start
 geth --rpc --rpcaddr localhost --rpcport 8545 --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal,personal console --rpccorsdomain="*" --dev
 
 ##################### web3js 외부접속
-geth --rpc --rpcaddr 0.0.0.0 --rpcport 8545 --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal,personal --rpccorsdomain "*"  console
+single node
+geth --port 30311 --rpc --rpcaddr 0.0.0.0 --rpcport 8545 --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal,personal --rpccorsdomain "*" console
+geth --port 30312 --rpc --rpcaddr 0.0.0.0 --rpcport 8546 --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal,personal --rpccorsdomain "*" console
+
+multi node
+geth --port 30311 --rpc --rpcaddr 0.0.0.0 --rpcport 8545 --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal,personal --rpccorsdomain "*" console --bootnodes 'enode://42e1af1d37bec8378e08cd421c0094c916822aa6ae03aa1e834dd319209cf73b2d5e563d2b3f3427e78ed51d59dbc8bd6da4a230c9993f88fccbc513601eb9a9@127.0.0.1:30311?discport=30301' --syncmode 'full'
+geth --port 30312 --rpc --rpcaddr 0.0.0.0 --rpcport 8546 --datadir $PWD --networkid 1234 --rpcapi db,eth,net,web3,admin.personal,personal --rpccorsdomain "*" console --bootnodes 'enode://42e1af1d37bec8378e08cd421c0094c916822aa6ae03aa1e834dd319209cf73b2d5e563d2b3f3427e78ed51d59dbc8bd6da4a230c9993f88fccbc513601eb9a9@127.0.0.1:30312?discport=30301' --syncmode 'full'
+
+geth 계정잠금 해제옵션
+ --unlock 0
+ >> geth 구동 시 0번째 계정을 잠금 해제한다
+ --password 'pass'
+ >> geth 구동 시 계정의 비밀번호를 입력한다
+
+geth 기본 마이닝 옵션
+--mine --minerthreads 1
 
 eth.blockNumber
 eth.getBlock()
@@ -69,6 +121,7 @@ eth.sendTransaction({from:eth.accounts[0],to:eth.accounts[1],value:'10000000000'
 eth.sendTransaction({from:eth.accounts[0],data:"hello world!!"})
 eth.sendTransaction({from:eth.accounts[0],data:"0x68656c6c6f20776f726c642121"})
 eth.pendingTransactions
+txpool.content
 
 트랜잭션 상세확인
 eth.getTransactionFromBlock("0x4c4b07ccae4a4fc45fb13bd6c191b9b8b386db474a119d231490278413ec50de") 
@@ -80,5 +133,21 @@ apt-get install net-tools
 # web3js
 npm, node 설치 후
 bower install web3
+
+
+root@5f15d9a4d8a1:/# mkdir bootnode
+root@5f15d9a4d8a1:/# cd bootnode/
+root@5f15d9a4d8a1:/bootnode# bootnode -genkey boot.key
+root@5f15d9a4d8a1:/bootnode# ls
+boot.key
+
+root@5f15d9a4d8a1:/bootnode# cat boot.key  
+517cc4ad86504e26d8f7eba8f10fb6040de71c12fc636c806d2a73337320315f
+
+root@5f15d9a4d8a1:/bootnode# bootnode -nodekey boot.key -verbosity 9 
+enode://f509ded141c13b40e78e52d8509879e0d9f3cf97a29bb0bb04510d1b476bb4af323ca25a81fa305bafddf3deab632225ad1dda230afdb7399047821a64df306f@127.0.0.1:0?discport=30301
+Note: you're using cmd/bootnode, a developer tool.
+We recommend using a regular node as bootstrap node for production deployments.
+INFO [07-24|04:17:53.112] New local node record                    seq=1 id=a90114f66ffdd120 ip=<nil> udp=0 tcp=0
 
 
