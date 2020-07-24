@@ -73,7 +73,6 @@ eth.pendingTransactions
 트랜잭션 상세확인
 eth.getTransactionFromBlock("0x4c4b07ccae4a4fc45fb13bd6c191b9b8b386db474a119d231490278413ec50de") 
 eth.getTransaction("0xd6260cedf627fdaf6d021106569bf7944728d224356e7353bc406043aafff0f3") 
-메인넷 같이 트랜잭션이 많은 경우 모든 블럭에 트랜잭션이 들어 있지만, 사설 네트웍의 경우에는 트랜잭션이 들어 있지 않는 블럭도 존재한다.
 
 # docker ifconfig설치
 apt-get install net-tools
@@ -82,5 +81,4 @@ apt-get install net-tools
 npm, node 설치 후
 bower install web3
 
-Web3.js는 모든 자료와 정보가 분산화, 분권화된 차세대 네트워크 구조로서, 서버가 없는 혁신적인 인터넷 분산형 웹이다. 자바스크립트(JavaScript) 기반으로 디앱(DApp)이나 서비스를 구현할 때 매우 유용하며, 내부적으로 HTTP 또는 IPC 를 통해 JSON-RPC API를 호출하도록 되어있다
 
